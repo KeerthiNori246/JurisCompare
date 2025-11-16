@@ -1,0 +1,68 @@
+# ============================
+# MODEL (do NOT ignore folder)
+# ============================
+legalbert_clause_model/*.tmp
+legalbert_clause_model/*.bak
+
+# HuggingFace cache (safe to ignore)
+huggingface/
+hf_cache/
+.cache/
+transformers_cache/
+
+# ============================
+# PYTHON
+# ============================
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pkl
+*.pickle
+*.log
+
+# ============================
+# ENVIRONMENT FILES
+# ============================
+venv/
+.env
+.env.*
+.venv/
+
+# ============================
+# OS / EDITOR FILES
+# ============================
+.DS_Store
+Thumbs.db
+.idea/
+*.swp
+
+# ============================
+# VISUAL STUDIO CODE
+# ============================
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+!.vscode/launch.json
+!.vscode/tasks.json
+
+# ============================
+# UPLOADS AND GENERATED FILES
+# ============================
+uploads/*
+!uploads/.gitkeep
+
+# ============================
+# FRONTEND
+# ============================
+node_modules/
+dist/
+build/
+
+# ============================
+# OTHER OPTIONAL
+# ============================
+*.bak
+*.tmp
+*.temp
+*.csv

@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DocuSense - Legal Document Analyzer</title>
+<style>
+/* Global Styles */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #f0f2f5;
+    margin: 0;
+    padding: 0;
+}
+
+header {
+    background: #1a73e8;
+    color: white;
+    padding: 25px 0;
+    text-align: center;
+    font-size: 2.5em;
+    font-weight: bold;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+
+.container {
+    max-width: 800px;
+    margin: 40px auto;
+    background: white;
+    padding: 40px 50px;
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    text-align: center;
+}
+
+h2 {
+    color: #333;
+    font-size: 1.6em;
+    margin-bottom: 25px;
+    border-bottom: 2px solid #1a73e8;
+    padding-bottom: 10px;
+}
+
+input[type="file"] {
+    display: none;
+}
+
+.custom-file-upload {
+    display: inline-block;
+    background: #1a73e8;
+    color: white;
+    padding: 15px 30px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 1.1em;
+    transition: 0.3s;
+    margin-bottom: 15px;
+}
+
+.custom-file-upload:hover {
+    background: #155ab6;
+}
+
+button.upload-btn {
+    display: inline-block;
+    background: #1a73e8;
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 8px;
+    font-size: 1em;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+button.upload-btn:hover {
+    background: #155ab6;
+}
+
+#loading {
+    display: none;
+    margin-top: 15px;
+    font-weight: bold;
+    color: #555;
+}
+
+#result {
+    text-align: left;
+    margin-top: 25px;
+    white-space: pre-wrap;
+}
+
+#keywords span {
+    background: #e7f1ff;
+    padding: 6px 10px;
+    margin: 4px;
+    border-radius: 6px;
+    display: inline-block;
+    font-size: 0.95em;
+}
+
+a.download-btn {
+    display: inline-block;
+    margin-top: 15px;
+    padding: 12px 25px;
+    background: #1a73e8;
+    color: white;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: 0.3s;
+}
+
+a.download-btn:hover {
+    background: #155ab6;
+}
+
+/* Footer */
+footer {
+    text-align: center;
+    margin-top: 50px;
+    padding: 20px 10px;
+    color: #777;
+    font-size: 0.9em;
+    border-top: 1px solid #ddd;
+}
+
+/* Responsive */
+@media (max-width:600px){
+    .container { padding:30px 20px; width:90%; }
+    .custom-file-upload { width: 100%; padding: 15px 0; }
+    button.upload-btn { width: 100%; padding: 15px 0; }
+    a.download-btn { width: 100%; padding: 15px 0; }
+}
+</style>
+</head>
+<body>
+
+<header>📘 DocuSense</header>
+
+<div class="container">
+    <h2>Legal Document Analyzer</h2>
+
+    <form id="upload-form" enctype="multipart/form-data">
+        <label class="custom-file-upload">
+            Select PDF
+            <input type="file" id="pdf" name="pdf" accept=".pdf" required>
+        </label>
+        <br>
+
+        <div id="file-name" style="margin: 10px 0; font-weight: bold; color: #1a73e8;"></div>
+
+        <button type="submit" class="upload-btn">Upload & Analyze</button>
+        <div id="loading">⏳ Analyzing... please wait.</div>
+    </form>
+
+    <div id="result"></div>
+</div>
+
+<footer>
+    Project by: Keerthi, Haneef, and Aftab
+</footer>
+
+<script>
+const form = document.getElementById('upload-form');
+const resultDiv = document.getElementById('result');
+const loadingDiv = document.getElementById('loading');
+const fileInput = document.getElementById('pdf');
+const fileNameDiv = document.getElementById('file-name');
+
+fileInput.addEventListener('change', ()=>{
+    if(fileInput.files.length > 0){
+        fileNameDiv.textContent = "📄 Selected PDF: " + fileInput.files[0].name;
+    } else {
+        fileNameDiv.textContent = "";
+    }
+});
+
+form.addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    const file = document.getElementById('pdf').files[0];
+    if(!file){ alert("Select a PDF"); return; }
+
+    const formData = new FormData();
+    formData.append('pdf', file);
+
+    loadingDiv.style.display = 'block';
+    resultDiv.innerHTML = '';
+
+    const res = await fetch('/analyze', { method:'POST', body: formData });
+    const data = await res.json();
+    loadingDiv.style.display = 'none';
+
+    if(data.error){ resultDiv.innerHTML = "❌ " + data.error; return; }
+
+    let html = "<h3>🧠 Keywords</h3><div id='keywords'>";
+    data.keywords.forEach(k=> html += `<span>${k}</span>`);
+    html += "</div>";
+
+    html += "<h3>📝 Extractive Summary (Simplified)</h3><ol>";
+    data.summary.forEach(s=> html += `<li>${s}</li>`);
+    html += "</ol>";
+
+    html += `<a href="${data.csv_file}" class="download-btn">⬇️ Download Top 25 Clauses (CSV)</a>`;
+    resultDiv.innerHTML = html;
+});
+</script>
+
+</body>
+</html>
