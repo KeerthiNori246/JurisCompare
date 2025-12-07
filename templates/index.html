@@ -5,14 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DocuSense - Legal Document Analyzer</title>
 <style>
-/* Global Styles */
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background: #f0f2f5;
     margin: 0;
     padding: 0;
 }
-
 header {
     background: #1a73e8;
     color: white;
@@ -22,17 +20,14 @@ header {
     font-weight: bold;
     box-shadow: 0 2px 6px rgba(0,0,0,0.15);
 }
-
 .container {
-    max-width: 800px;
+    max-width: 900px;
     margin: 40px auto;
     background: white;
     padding: 40px 50px;
     border-radius: 12px;
     box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-    text-align: center;
 }
-
 h2 {
     color: #333;
     font-size: 1.6em;
@@ -40,56 +35,59 @@ h2 {
     border-bottom: 2px solid #1a73e8;
     padding-bottom: 10px;
 }
-
-input[type="file"] {
-    display: none;
+.mode-toggle {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 25px;
 }
-
+.mode-btn {
+    padding: 10px 20px;
+    background: #ddd;
+    border-radius: 8px;
+    margin: 0 10px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: 0.3s;
+}
+.mode-btn.active {
+    background: #1a73e8;
+    color: white;
+}
+input[type="file"] { display: none; }
 .custom-file-upload {
     display: inline-block;
     background: #1a73e8;
     color: white;
-    padding: 15px 30px;
+    padding: 14px 25px;
     border-radius: 10px;
     cursor: pointer;
     font-size: 1.1em;
     transition: 0.3s;
-    margin-bottom: 15px;
+    margin-bottom: 10px;
 }
-
 .custom-file-upload:hover {
     background: #155ab6;
 }
-
 button.upload-btn {
-    display: inline-block;
     background: #1a73e8;
     color: white;
     border: none;
     padding: 12px 25px;
     border-radius: 8px;
-    font-size: 1em;
     cursor: pointer;
     transition: 0.3s;
 }
-
-button.upload-btn:hover {
-    background: #155ab6;
-}
-
+button.upload-btn:hover { background: #155ab6; }
 #loading {
     display: none;
     margin-top: 15px;
     font-weight: bold;
     color: #555;
 }
-
 #result {
-    text-align: left;
     margin-top: 25px;
     white-space: pre-wrap;
 }
-
 #keywords span {
     background: #e7f1ff;
     padding: 6px 10px;
@@ -98,38 +96,22 @@ button.upload-btn:hover {
     display: inline-block;
     font-size: 0.95em;
 }
-
-a.download-btn {
+.download-btn {
     display: inline-block;
-    margin-top: 15px;
     padding: 12px 25px;
     background: #1a73e8;
     color: white;
-    border-radius: 8px;
     text-decoration: none;
-    transition: 0.3s;
+    border-radius: 8px;
+    margin-top: 15px;
 }
-
-a.download-btn:hover {
-    background: #155ab6;
-}
-
-/* Footer */
+.download-btn:hover { background: #155ab6; }
 footer {
     text-align: center;
     margin-top: 50px;
     padding: 20px 10px;
     color: #777;
-    font-size: 0.9em;
     border-top: 1px solid #ddd;
-}
-
-/* Responsive */
-@media (max-width:600px){
-    .container { padding:30px 20px; width:90%; }
-    .custom-file-upload { width: 100%; padding: 15px 0; }
-    button.upload-btn { width: 100%; padding: 15px 0; }
-    a.download-btn { width: 100%; padding: 15px 0; }
 }
 </style>
 </head>
@@ -138,71 +120,157 @@ footer {
 <header>📘 DocuSense</header>
 
 <div class="container">
-    <h2>Legal Document Analyzer</h2>
 
-    <form id="upload-form" enctype="multipart/form-data">
-        <label class="custom-file-upload">
-            Select PDF
-            <input type="file" id="pdf" name="pdf" accept=".pdf" required>
-        </label>
-        <br>
+    <!-- MODE SWITCH -->
+    <div class="mode-toggle">
+        <div id="singleBtn" class="mode-btn active">Single Document Analysis</div>
+        <div id="compareBtn" class="mode-btn">Compare Two Documents</div>
+    </div>
 
-        <div id="file-name" style="margin: 10px 0; font-weight: bold; color: #1a73e8;"></div>
+    <!-- SINGLE DOCUMENT ANALYSIS -->
+    <div id="singleMode">
+        <h2>Analyze a Legal Document</h2>
 
-        <button type="submit" class="upload-btn">Upload & Analyze</button>
-        <div id="loading">⏳ Analyzing... please wait.</div>
-    </form>
+        <form id="upload-form" enctype="multipart/form-data">
+            <label class="custom-file-upload">
+                Choose PDF
+                <input type="file" id="pdf" name="pdf" accept=".pdf">
+            </label>
+            <div id="file-name" style="font-weight:bold;color:#1a73e8;"></div>
+            <button type="submit" class="upload-btn">Upload & Analyze</button>
+            <div id="loading">⏳ Processing document...</div>
+        </form>
+    </div>
+
+    <!-- DOCUMENT COMPARISON -->
+    <div id="compareMode" style="display:none;">
+        <h2>Compare Two Legal Document Versions</h2>
+
+        <form id="compare-form" enctype="multipart/form-data">
+            <label class="custom-file-upload">
+                Choose Version 1 PDF
+                <input type="file" id="pdf1" name="pdf1" accept=".pdf">
+            </label>
+            <div id="file1-name" style="font-weight:bold;color:#1a73e8;"></div>
+
+            <label class="custom-file-upload">
+                Choose Version 2 PDF
+                <input type="file" id="pdf2" name="pdf2" accept=".pdf">
+            </label>
+            <div id="file2-name" style="font-weight:bold;color:#1a73e8;"></div>
+
+            <button type="submit" class="upload-btn">Compare Documents</button>
+            <div id="loading2" style="display:none;">⏳ Comparing versions...</div>
+
+        </form>
+    </div>
 
     <div id="result"></div>
+
 </div>
 
-<footer>
-    Project by: Keerthi, Haneef, and Aftab
-</footer>
+<footer>Project by: Keerthi, Haneef, and Aftab</footer>
 
 <script>
-const form = document.getElementById('upload-form');
-const resultDiv = document.getElementById('result');
-const loadingDiv = document.getElementById('loading');
-const fileInput = document.getElementById('pdf');
-const fileNameDiv = document.getElementById('file-name');
+/* MODE SWITCH */
+document.getElementById("singleBtn").onclick = function () {
+    this.classList.add("active");
+    document.getElementById("compareBtn").classList.remove("active");
+    document.getElementById("singleMode").style.display = "block";
+    document.getElementById("compareMode").style.display = "none";
+    document.getElementById("result").innerHTML = "";
+};
+document.getElementById("compareBtn").onclick = function () {
+    this.classList.add("active");
+    document.getElementById("singleBtn").classList.remove("active");
+    document.getElementById("singleMode").style.display = "none";
+    document.getElementById("compareMode").style.display = "block";
+    document.getElementById("result").innerHTML = "";
+};
 
-fileInput.addEventListener('change', ()=>{
-    if(fileInput.files.length > 0){
-        fileNameDiv.textContent = "📄 Selected PDF: " + fileInput.files[0].name;
-    } else {
-        fileNameDiv.textContent = "";
-    }
-});
+/* File Name Display */
+pdf.onchange = () =>
+    document.getElementById("file-name").innerText = pdf.files.length ? "📄 " + pdf.files[0].name : "";
 
-form.addEventListener('submit', async (e)=>{
+pdf1.onchange = () =>
+    document.getElementById("file1-name").innerText = pdf1.files.length ? "📄 " + pdf1.files[0].name : "";
+
+pdf2.onchange = () =>
+    document.getElementById("file2-name").innerText = pdf2.files.length ? "📄 " + pdf2.files[0].name : "";
+
+/* SINGLE DOC ANALYSIS */
+document.getElementById("upload-form").addEventListener("submit", async (e) => {
     e.preventDefault();
-    const file = document.getElementById('pdf').files[0];
-    if(!file){ alert("Select a PDF"); return; }
+    const file = pdf.files[0];
+    if (!file) return alert("Please select a PDF.");
 
-    const formData = new FormData();
-    formData.append('pdf', file);
+    let formData = new FormData();
+    formData.append("pdf", file);
 
-    loadingDiv.style.display = 'block';
-    resultDiv.innerHTML = '';
+    loading.style.display = "block";
+    result.innerHTML = "";
 
-    const res = await fetch('/analyze', { method:'POST', body: formData });
+    const res = await fetch("/analyze", { method: "POST", body: formData });
     const data = await res.json();
-    loadingDiv.style.display = 'none';
+    loading.style.display = "none";
 
-    if(data.error){ resultDiv.innerHTML = "❌ " + data.error; return; }
+    if (data.error) return result.innerHTML = "❌ " + data.error;
 
     let html = "<h3>🧠 Keywords</h3><div id='keywords'>";
-    data.keywords.forEach(k=> html += `<span>${k}</span>`);
+    data.keywords.forEach(k => html += `<span>${k}</span>`);
     html += "</div>";
 
-    html += "<h3>📝 Extractive Summary (Simplified)</h3><ol>";
-    data.summary.forEach(s=> html += `<li>${s}</li>`);
+    html += "<h3>📝 Simplified Summary</h3><ol>";
+    data.summary.forEach(s => html += `<li>${s}</li>`);
     html += "</ol>";
 
-    html += `<a href="${data.csv_file}" class="download-btn">⬇️ Download Top 25 Clauses (CSV)</a>`;
-    resultDiv.innerHTML = html;
+    html += `<a class="download-btn" href="${data.csv_file}">⬇️ Download Top 25 Clauses (CSV)</a>`;
+    result.innerHTML = html;
 });
+
+/* DOC COMPARISON */
+/* DOC COMPARISON */
+document.getElementById("compare-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const f1 = pdf1.files[0], f2 = pdf2.files[0];
+
+    if (!f1 || !f2) {
+        alert("Upload both PDFs.");
+        return;
+    }
+
+    // show loader only now
+    loading2.style.display = "block";
+    result.innerHTML = "";
+
+    let formData = new FormData();
+    formData.append("pdf1", f1);
+    formData.append("pdf2", f2);
+
+    const res = await fetch("/compare", { method: "POST", body: formData });
+
+    const data = await res.json();
+    loading2.style.display = "none"; // hide loader after completion
+
+    if (data.error) {
+        result.innerHTML = "❌ " + data.error;
+        return;
+    }
+
+    let html = "<h3>🧩 Version Comparison Keywords</h3><div id='keywords'>";
+    data.keywords.forEach(k => html += `<span>${k}</span>`);
+    html += "</div>";
+
+    html += "<h3>📝 Summary of Version 2</h3><ol>";
+    data.summary.forEach(s => html += `<li>${s}</li>`);
+    html += "</ol>";
+
+    html += `<a class="download-btn" href="${data.comparison_csv}">⬇️ Download Clause Comparison CSV</a>`;
+
+    result.innerHTML = html;
+});
+
 </script>
 
 </body>
