@@ -260,8 +260,28 @@ def compare_versions(text1, text2):
     df1 = pick_top_clauses(split_sentences(text1))
     df2 = pick_top_clauses(split_sentences(text2))
     comparison_df = compare_top_clauses(df1, df2)
+    
+    v2_clause_counts = clause_count_by_type(df2)
+    change_stats = change_summary(comparison_df)
 
-    return final_kw, summary2, comparison_df
+    return final_kw, summary2, comparison_df, v2_clause_counts, change_stats
+
+
+def clause_count_by_type(df):
+    return df["label"].value_counts().to_dict()
+
+def change_summary(comp_df):
+    summary = {
+        "Modified": 0,
+        "Added": 0,
+        "Unchanged": 0,
+        "Removed": 0
+    }
+
+    for status in comp_df["Status"]:
+        summary[status] += 1
+
+    return summary
 
 
 # =========================
@@ -275,42 +295,7 @@ def home():
     return render_template("index.html")
 
 
-# ------------------------
-# ORIGINAL SINGLE DOCUMENT ANALYSIS
-# ------------------------
-@app.route("/analyze", methods=["POST"])
-def analyze():
-    if "pdf" not in request.files:
-        return jsonify({"error": "No file uploaded."})
 
-    file = request.files["pdf"]
-    file_path = os.path.join(UPLOAD_FOLDER, file.filename)
-    file.save(file_path)
-
-    text = extract_text_from_pdf(file_path)
-    cleaned = clean_text(text)
-    sentences = split_sentences(cleaned)
-
-    # KEYWORDS
-    raw_kw = kw_model.extract_keywords(cleaned, keyphrase_ngram_range=(1, 3),
-                                      stop_words=STOP_WORDS, top_n=TOP_N_KEYWORDS)
-    cleaned_kw = [(clean_keyword(k), s) for k, s in raw_kw if len(k) > 2]
-    unique_kw = deduplicate_keywords(cleaned_kw)
-    final_keywords = [kw for kw, _ in unique_kw[:FINAL_KEYWORD_COUNT]]
-
-    # SUMMARY
-    _, simplified = summarize_text(cleaned)
-
-    # CLAUSE EXPORT
-    df = pick_top_clauses(sentences)
-    csv_path = os.path.join(UPLOAD_FOLDER, "top_25_clauses.csv")
-    df.to_csv(csv_path, index=False)
-
-    return jsonify({
-        "keywords": final_keywords,
-        "summary": simplified,
-        "csv_file": "/download_csv"
-    })
 
 
 # ------------------------
@@ -334,16 +319,19 @@ def compare():
     text1 = clean_text(extract_text_from_pdf(p1))
     text2 = clean_text(extract_text_from_pdf(p2))
 
-    keywords, summary, comp_df = compare_versions(text1, text2)
+    keywords, summary, comp_df, clause_counts, change_stats = compare_versions(text1, text2)
 
     comp_path = os.path.join(UPLOAD_FOLDER, "clause_comparison.csv")
     comp_df.to_csv(comp_path, index=False)
 
     return jsonify({
-        "keywords": keywords,
-        "summary": summary,
-        "comparison_csv": "/download_comparison"
+    "keywords": keywords,
+    "summary": summary,
+    "comparison_csv": "/download_comparison",
+    "clause_counts": clause_counts,
+    "change_stats": change_stats
     })
+
 
 
 @app.route("/download_comparison")
@@ -352,12 +340,6 @@ def download_comp():
     return send_file(p, mimetype="text/csv", as_attachment=True,
                      download_name="clause_comparison.csv")
 
-
-@app.route("/download_csv")
-def download_csv():
-    path = os.path.join(UPLOAD_FOLDER, "top_25_clauses.csv")
-    return send_file(path, mimetype="text/csv", as_attachment=True,
-                     download_name="top_25_clauses.csv")
 
 
 if __name__ == "__main__":

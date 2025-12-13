@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DocuSense - Legal Document Analyzer</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -35,24 +36,7 @@ h2 {
     border-bottom: 2px solid #1a73e8;
     padding-bottom: 10px;
 }
-.mode-toggle {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 25px;
-}
-.mode-btn {
-    padding: 10px 20px;
-    background: #ddd;
-    border-radius: 8px;
-    margin: 0 10px;
-    cursor: pointer;
-    font-weight: bold;
-    transition: 0.3s;
-}
-.mode-btn.active {
-    background: #1a73e8;
-    color: white;
-}
+
 input[type="file"] { display: none; }
 .custom-file-upload {
     display: inline-block;
@@ -78,16 +62,19 @@ button.upload-btn {
     transition: 0.3s;
 }
 button.upload-btn:hover { background: #155ab6; }
-#loading {
+
+#loading2 {
     display: none;
     margin-top: 15px;
     font-weight: bold;
     color: #555;
 }
+
 #result {
     margin-top: 25px;
     white-space: pre-wrap;
 }
+
 #keywords span {
     background: #e7f1ff;
     padding: 6px 10px;
@@ -96,6 +83,7 @@ button.upload-btn:hover { background: #155ab6; }
     display: inline-block;
     font-size: 0.95em;
 }
+
 .download-btn {
     display: inline-block;
     padding: 12px 25px;
@@ -106,6 +94,7 @@ button.upload-btn:hover { background: #155ab6; }
     margin-top: 15px;
 }
 .download-btn:hover { background: #155ab6; }
+
 footer {
     text-align: center;
     margin-top: 50px;
@@ -121,29 +110,8 @@ footer {
 
 <div class="container">
 
-    <!-- MODE SWITCH -->
-    <div class="mode-toggle">
-        <div id="singleBtn" class="mode-btn active">Single Document Analysis</div>
-        <div id="compareBtn" class="mode-btn">Compare Two Documents</div>
-    </div>
-
-    <!-- SINGLE DOCUMENT ANALYSIS -->
-    <div id="singleMode">
-        <h2>Analyze a Legal Document</h2>
-
-        <form id="upload-form" enctype="multipart/form-data">
-            <label class="custom-file-upload">
-                Choose PDF
-                <input type="file" id="pdf" name="pdf" accept=".pdf">
-            </label>
-            <div id="file-name" style="font-weight:bold;color:#1a73e8;"></div>
-            <button type="submit" class="upload-btn">Upload & Analyze</button>
-            <div id="loading">⏳ Processing document...</div>
-        </form>
-    </div>
-
-    <!-- DOCUMENT COMPARISON -->
-    <div id="compareMode" style="display:none;">
+    <!-- ONLY COMPARE MODE -->
+    <div id="compareMode">
         <h2>Compare Two Legal Document Versions</h2>
 
         <form id="compare-form" enctype="multipart/form-data">
@@ -160,8 +128,7 @@ footer {
             <div id="file2-name" style="font-weight:bold;color:#1a73e8;"></div>
 
             <button type="submit" class="upload-btn">Compare Documents</button>
-            <div id="loading2" style="display:none;">⏳ Comparing versions...</div>
-
+            <div id="loading2">⏳ Comparing versions...</div>
         </form>
     </div>
 
@@ -172,63 +139,13 @@ footer {
 <footer>Project by: Keerthi, Haneef, and Aftab</footer>
 
 <script>
-/* MODE SWITCH */
-document.getElementById("singleBtn").onclick = function () {
-    this.classList.add("active");
-    document.getElementById("compareBtn").classList.remove("active");
-    document.getElementById("singleMode").style.display = "block";
-    document.getElementById("compareMode").style.display = "none";
-    document.getElementById("result").innerHTML = "";
-};
-document.getElementById("compareBtn").onclick = function () {
-    this.classList.add("active");
-    document.getElementById("singleBtn").classList.remove("active");
-    document.getElementById("singleMode").style.display = "none";
-    document.getElementById("compareMode").style.display = "block";
-    document.getElementById("result").innerHTML = "";
-};
-
 /* File Name Display */
-pdf.onchange = () =>
-    document.getElementById("file-name").innerText = pdf.files.length ? "📄 " + pdf.files[0].name : "";
-
 pdf1.onchange = () =>
     document.getElementById("file1-name").innerText = pdf1.files.length ? "📄 " + pdf1.files[0].name : "";
 
 pdf2.onchange = () =>
     document.getElementById("file2-name").innerText = pdf2.files.length ? "📄 " + pdf2.files[0].name : "";
 
-/* SINGLE DOC ANALYSIS */
-document.getElementById("upload-form").addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const file = pdf.files[0];
-    if (!file) return alert("Please select a PDF.");
-
-    let formData = new FormData();
-    formData.append("pdf", file);
-
-    loading.style.display = "block";
-    result.innerHTML = "";
-
-    const res = await fetch("/analyze", { method: "POST", body: formData });
-    const data = await res.json();
-    loading.style.display = "none";
-
-    if (data.error) return result.innerHTML = "❌ " + data.error;
-
-    let html = "<h3>🧠 Keywords</h3><div id='keywords'>";
-    data.keywords.forEach(k => html += `<span>${k}</span>`);
-    html += "</div>";
-
-    html += "<h3>📝 Simplified Summary</h3><ol>";
-    data.summary.forEach(s => html += `<li>${s}</li>`);
-    html += "</ol>";
-
-    html += `<a class="download-btn" href="${data.csv_file}">⬇️ Download Top 25 Clauses (CSV)</a>`;
-    result.innerHTML = html;
-});
-
-/* DOC COMPARISON */
 /* DOC COMPARISON */
 document.getElementById("compare-form").addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -240,7 +157,6 @@ document.getElementById("compare-form").addEventListener("submit", async (e) => 
         return;
     }
 
-    // show loader only now
     loading2.style.display = "block";
     result.innerHTML = "";
 
@@ -249,9 +165,8 @@ document.getElementById("compare-form").addEventListener("submit", async (e) => 
     formData.append("pdf2", f2);
 
     const res = await fetch("/compare", { method: "POST", body: formData });
-
     const data = await res.json();
-    loading2.style.display = "none"; // hide loader after completion
+    loading2.style.display = "none";
 
     if (data.error) {
         result.innerHTML = "❌ " + data.error;
@@ -262,6 +177,21 @@ document.getElementById("compare-form").addEventListener("submit", async (e) => 
     data.keywords.forEach(k => html += `<span>${k}</span>`);
     html += "</div>";
 
+    html += "<h3>📊 Clause Count (Version 2)</h3><ul>";
+    for (let type in data.clause_counts) {
+        html += `<li><b>${type}</b>: ${data.clause_counts[type]}</li>`;
+    }
+    html += "</ul>";
+
+    html += "<h3>🔍 Clause Changes Compared to Version 1</h3>";
+    html += `<canvas id="changePie" style="max-width: 450px; margin: 20px auto; display:block;"></canvas>`;
+
+    html += "<ul>";
+    for (let stat in data.change_stats) {
+        html += `<li><b>${stat}</b>: ${data.change_stats[stat]}</li>`;
+    }
+    html += "</ul>";
+
     html += "<h3>📝 Summary of Version 2</h3><ol>";
     data.summary.forEach(s => html += `<li>${s}</li>`);
     html += "</ol>";
@@ -269,8 +199,31 @@ document.getElementById("compare-form").addEventListener("submit", async (e) => 
     html += `<a class="download-btn" href="${data.comparison_csv}">⬇️ Download Clause Comparison CSV</a>`;
 
     result.innerHTML = html;
-});
 
+    new Chart(document.getElementById('changePie'), {
+        type: 'pie',
+        data: {
+            labels: ['Added', 'Modified', 'Removed', 'Unchanged'],
+            datasets: [{
+                data: [
+                    data.change_stats.Added,
+                    data.change_stats.Modified,
+                    data.change_stats.Removed,
+                    data.change_stats.Unchanged
+                ]
+            }]
+        },
+        options: {
+            plugins: {
+                legend: { position: 'bottom' },
+                title: {
+                    display: true,
+                    text: 'Clause Change Breakdown'
+                }
+            }
+        }
+    });
+});
 </script>
 
 </body>
