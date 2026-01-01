@@ -3,224 +3,320 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DocuSense - Legal Document Analyzer</title>
+<title>JurisCompare</title>
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+
 <style>
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: #f0f2f5;
+    font-family: "Georgia", "Times New Roman", serif;
+    background: #ecefea;
     margin: 0;
-    padding: 0;
+    color: #284868;
 }
+
+/* ---------- HEADER ---------- */
 header {
-    background: #1a73e8;
-    color: white;
-    padding: 25px 0;
+    background: #284868;
+    padding: 30px 0 24px;
     text-align: center;
-    font-size: 2.5em;
-    font-weight: bold;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
 }
+
+.logo {
+    width: 60px;
+    height: 60px;
+    margin: 0 auto 12px;
+}
+
+.logo img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+
+header h1 {
+    margin: 0;
+    font-size: 2.6em;
+    color: #f7dca1;
+}
+
+header p {
+    margin-top: 6px;
+    font-size: 1.05em;
+    color: #e7e1cf;
+}
+
+/* ---------- CONTAINER ---------- */
 .container {
     max-width: 900px;
-    margin: 40px auto;
-    background: white;
-    padding: 40px 50px;
-    border-radius: 12px;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    margin: 50px auto;
+    background: #ffffff;
+    padding: 45px 55px;
+    border-radius: 16px;
+    box-shadow: 0 18px 40px rgba(40,72,104,0.18);
 }
+
 h2 {
-    color: #333;
-    font-size: 1.6em;
-    margin-bottom: 25px;
-    border-bottom: 2px solid #1a73e8;
+    border-bottom: 3px solid #f7dca1;
     padding-bottom: 10px;
 }
 
-input[type="file"] { display: none; }
+/* ---------- FILE UPLOAD ---------- */
+.upload-row {
+    display: flex;
+    gap: 25px;
+    margin-top: 25px;
+}
+
+input[type="file"] {
+    display: none;
+}
+
+.upload-col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px; /* ensures spacing between button & name card */
+}
+
+
 .custom-file-upload {
-    display: inline-block;
-    background: #1a73e8;
-    color: white;
-    padding: 14px 25px;
+    display: block;
+    width: 100%;
+    background: #284868;
+    color: #ffffff;
+    padding: 16px;
+    border-radius: 12px;
+    text-align: center;
+    cursor: pointer;
+    box-sizing: border-box;
+}
+
+
+.custom-file-upload:hover {
+    background: #1f364f;
+}
+
+.file-box {
+    width: 100%;
+    box-sizing: border-box;
+    background: #f4f6f7;
+    border: 1px solid #d6d9db;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 0.95em;
+    color: #333;
+    min-height: 22px;
+    word-break: break-word; /* long PDF names won’t overflow */
+}
+
+/* ---------- BUTTON ---------- */
+button.upload-btn {
+    margin-top: 28px;
+    background: #f7dca1;
+    color: #284868;
+    border: none;
+    padding: 16px 36px;
+    font-size: 1.15em;
     border-radius: 10px;
     cursor: pointer;
-    font-size: 1.1em;
-    transition: 0.3s;
-    margin-bottom: 10px;
 }
-.custom-file-upload:hover {
-    background: #155ab6;
-}
-button.upload-btn {
-    background: #1a73e8;
-    color: white;
-    border: none;
-    padding: 12px 25px;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: 0.3s;
-}
-button.upload-btn:hover { background: #155ab6; }
 
+button.upload-btn:hover {
+    background: #f2cf82;
+}
+
+/* ---------- LOADER ---------- */
 #loading2 {
     display: none;
-    margin-top: 15px;
-    font-weight: bold;
-    color: #555;
+    margin-top: 20px;
+    align-items: center;
+    gap: 10px;
+    color: #6b7280;
 }
 
+.spinner {
+    width: 18px;
+    height: 18px;
+    border: 3px solid #cfd4d8;
+    border-top: 3px solid #284868;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ---------- RESULTS ---------- */
 #result {
-    margin-top: 25px;
-    white-space: pre-wrap;
+    margin-top: 40px;
 }
 
 #keywords span {
-    background: #e7f1ff;
+    background: #f7dca1;
     padding: 6px 10px;
-    margin: 4px;
     border-radius: 6px;
+    margin: 4px;
     display: inline-block;
-    font-size: 0.95em;
+    font-size: 0.9em;
 }
 
+/* ---------- CHART ---------- */
+.chart-flex {
+    display: flex;
+    gap: 40px;
+    align-items: center;
+    margin-top: 20px;
+}
+
+.chart-flex canvas {
+    max-width: 220px;
+    max-height: 220px;
+}
+
+.stats ul {
+    list-style: none;
+    padding: 0;
+}
+
+.stats li {
+    margin-bottom: 6px;
+}
+
+/* ---------- DOWNLOAD ---------- */
 .download-btn {
     display: inline-block;
-    padding: 12px 25px;
-    background: #1a73e8;
-    color: white;
+    margin-top: 20px;
+    padding: 8px 16px;
+    font-size: 0.9em;
+    background: #284868;
+    color: #ffffff;
+    border-radius: 6px;
     text-decoration: none;
-    border-radius: 8px;
-    margin-top: 15px;
-}
-.download-btn:hover { background: #155ab6; }
-
-footer {
-    text-align: center;
-    margin-top: 50px;
-    padding: 20px 10px;
-    color: #777;
-    border-top: 1px solid #ddd;
 }
 </style>
 </head>
+
 <body>
 
-<header>📘 DocuSense</header>
+<header>
+    <h1>JurisCompare</h1>
+    <p>Your tool to compare two versions of a legal document</p>
+</header>
 
 <div class="container">
+    <h2>Compare Two Versions of a Legal Document</h2>
 
-    <!-- ONLY COMPARE MODE -->
-    <div id="compareMode">
-        <h2>Compare Two Legal Document Versions</h2>
+    <form id="compare-form" enctype="multipart/form-data">
+        <div class="upload-row">
+            <div class="upload-col">
+                <label class="custom-file-upload">
+                    Upload Version 1 PDF
+                    <input type="file" id="pdf1" name="pdf1" accept=".pdf">
+                </label>
+                <div id="file1-name" class="file-box"></div>
+            </div>
 
-        <form id="compare-form" enctype="multipart/form-data">
-            <label class="custom-file-upload">
-                Choose Version 1 PDF
-                <input type="file" id="pdf1" name="pdf1" accept=".pdf">
-            </label>
-            <div id="file1-name" style="font-weight:bold;color:#1a73e8;"></div>
+            <div class="upload-col">
+                <label class="custom-file-upload">
+                    Upload Version 2 PDF
+                    <input type="file" id="pdf2" name="pdf2" accept=".pdf">
+                </label>
+                <div id="file2-name" class="file-box"></div>
+            </div>
+        </div>
 
-            <label class="custom-file-upload">
-                Choose Version 2 PDF
-                <input type="file" id="pdf2" name="pdf2" accept=".pdf">
-            </label>
-            <div id="file2-name" style="font-weight:bold;color:#1a73e8;"></div>
+        <button type="submit" class="upload-btn">Compare Versions</button>
 
-            <button type="submit" class="upload-btn">Compare Documents</button>
-            <div id="loading2">⏳ Comparing versions...</div>
-        </form>
-    </div>
+        <div id="loading2">
+            <div class="spinner"></div>
+            Comparing versions...
+        </div>
+    </form>
 
     <div id="result"></div>
-
 </div>
 
-<footer>Project by: Keerthi, Haneef, and Aftab</footer>
-
 <script>
-/* File Name Display */
-pdf1.onchange = () =>
-    document.getElementById("file1-name").innerText = pdf1.files.length ? "📄 " + pdf1.files[0].name : "";
+pdf1.onchange = () => {
+    document.getElementById("file1-name").innerText =
+        pdf1.files.length ? pdf1.files[0].name : "";
+};
 
-pdf2.onchange = () =>
-    document.getElementById("file2-name").innerText = pdf2.files.length ? "📄 " + pdf2.files[0].name : "";
+pdf2.onchange = () => {
+    document.getElementById("file2-name").innerText =
+        pdf2.files.length ? pdf2.files[0].name : "";
+};
 
-/* DOC COMPARISON */
 document.getElementById("compare-form").addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    const f1 = pdf1.files[0], f2 = pdf2.files[0];
+    const f1 = pdf1.files[0];
+    const f2 = pdf2.files[0];
+    if (!f1 || !f2) return;
 
-    if (!f1 || !f2) {
-        alert("Upload both PDFs.");
-        return;
-    }
-
-    loading2.style.display = "block";
+    loading2.style.display = "flex";
     result.innerHTML = "";
 
-    let formData = new FormData();
+    const formData = new FormData();
     formData.append("pdf1", f1);
     formData.append("pdf2", f2);
 
     const res = await fetch("/compare", { method: "POST", body: formData });
     const data = await res.json();
+
     loading2.style.display = "none";
 
-    if (data.error) {
-        result.innerHTML = "❌ " + data.error;
-        return;
-    }
-
-    let html = "<h3>🧩 Version Comparison Keywords</h3><div id='keywords'>";
+    let html = "<h3>Version Comparison Keywords</h3><div id='keywords'>";
     data.keywords.forEach(k => html += `<span>${k}</span>`);
     html += "</div>";
 
-    html += "<h3>📊 Clause Count (Version 2)</h3><ul>";
-    for (let type in data.clause_counts) {
-        html += `<li><b>${type}</b>: ${data.clause_counts[type]}</li>`;
+    html += "<h3>Clause Count (Version 2)</h3><ul>";
+    for (let t in data.clause_counts) {
+        html += `<li><b>${t}</b>: ${data.clause_counts[t]}</li>`;
     }
     html += "</ul>";
 
-    html += "<h3>🔍 Clause Changes Compared to Version 1</h3>";
-    html += `<canvas id="changePie" style="max-width: 450px; margin: 20px auto; display:block;"></canvas>`;
+    html += "<h3>Clause Changes Compared to Version 1</h3>";
+    html += `<div class="chart-flex">
+                <canvas id="changePie" width="220" height="220"></canvas>
+                <div class="stats">
+                    <ul>
+                        <li>Added: ${data.change_stats.Added}</li>
+                        <li>Modified: ${data.change_stats.Modified}</li>
+                        <li>Removed: ${data.change_stats.Removed}</li>
+                        <li>Unchanged: ${data.change_stats.Unchanged}</li>
+                    </ul>
+                </div>
+            </div>`;
 
-    html += "<ul>";
-    for (let stat in data.change_stats) {
-        html += `<li><b>${stat}</b>: ${data.change_stats[stat]}</li>`;
-    }
-    html += "</ul>";
-
-    html += "<h3>📝 Summary of Version 2</h3><ol>";
+    html += "<h3>Summary of Version 2</h3><ol>";
     data.summary.forEach(s => html += `<li>${s}</li>`);
     html += "</ol>";
 
-    html += `<a class="download-btn" href="${data.comparison_csv}">⬇️ Download Clause Comparison CSV</a>`;
+    html += `<a class="download-btn" href="${data.comparison_csv}">
+                Download clause comparison CSV
+            </a>`;
 
     result.innerHTML = html;
 
-    new Chart(document.getElementById('changePie'), {
-        type: 'pie',
+    new Chart(document.getElementById("changePie"), {
+        type: "doughnut",
         data: {
-            labels: ['Added', 'Modified', 'Removed', 'Unchanged'],
+            labels: ["Added", "Modified", "Removed", "Unchanged"],
             datasets: [{
-                data: [
-                    data.change_stats.Added,
-                    data.change_stats.Modified,
-                    data.change_stats.Removed,
-                    data.change_stats.Unchanged
-                ]
+                data: Object.values(data.change_stats),
+                backgroundColor: ["#f7dca1", "#c6d4e1", "#e6b8b8", "#cfd8dc"],
+                borderWidth: 2
             }]
         },
         options: {
-            plugins: {
-                legend: { position: 'bottom' },
-                title: {
-                    display: true,
-                    text: 'Clause Change Breakdown'
-                }
-            }
+            cutout: "65%",
+            plugins: { legend: { display: false } }
         }
     });
 });

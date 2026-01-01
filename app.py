@@ -230,9 +230,8 @@ def compare_top_clauses(df1, df2):
 
         out.append({
             "Clause Type": label1,
-            "Version 1": s1,
-            "Version 2": s2,
-            "Similarity": round(float(best_sim), 4),
+            "Version-1 Clause": s1,
+            "Version-2 Clause": s2,
             "Status": status
         })
 
