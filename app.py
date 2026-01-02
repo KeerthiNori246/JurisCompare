@@ -191,6 +191,27 @@ def pick_top_clauses(sentences):
 # =========================
 # CLAUSE COMPARISON
 # =========================
+def significant_numeric_change(s1, s2):
+    # Extract digits
+    nums1 = re.findall(r'\d+', s1)
+    nums2 = re.findall(r'\d+', s2)
+
+    # Handle written numbers commonly used in legal docs
+    word_to_num = {
+        "one": 1, "two": 2, "three": 3, "four": 4, "five": 5,
+        "six": 6, "seven": 7, "eight": 8, "nine": 9, "ten": 10,
+        "fifteen": 15, "thirty": 30, "sixty": 60, "ninety": 90
+    }
+
+    def extract_word_numbers(text):
+        return [str(v) for w, v in word_to_num.items() if w in text]
+
+    nums1 += extract_word_numbers(s1)
+    nums2 += extract_word_numbers(s2)
+
+    return set(nums1) != set(nums2)
+
+
 def compare_top_clauses(df1, df2):
 
     v1_sents = df1["sentence"].tolist()
@@ -220,7 +241,14 @@ def compare_top_clauses(df1, df2):
 
         if s1 and s2:
             ratio = SequenceMatcher(None, s1, s2).ratio()
-            status = "Unchanged" if ratio > 0.95 else "Modified"
+
+            if significant_numeric_change(s1, s2):
+                status = "Modified"
+            elif ratio > 0.95:
+                status = "Unchanged"
+            else:
+                status = "Modified"
+
         elif s1 and not s2:
             status = "Removed"
         elif s2 and not s1:
