@@ -53,20 +53,48 @@ except LookupError:
 # =========================
 # MODELS (LOAD ONCE)
 # =========================
-kw_model = KeyBERT(model=EMBEDDING_MODEL)
-embed_model = SentenceTransformer(EMBEDDING_MODEL)
+kw_model = None
+embed_model = None
+summarizer = None
+tokenizer = None
+clause_model = None
 
-summarizer = pipeline(
-    "summarization", model="t5-small",
-    device=0 if torch.cuda.is_available() else -1
-)
 
-tokenizer = AutoTokenizer.from_pretrained(LEGAL_MODEL_PATH)
-clause_model = AutoModelForSequenceClassification.from_pretrained(
-    LEGAL_MODEL_PATH,
-    torch_dtype=torch.float32
-).to(device)
-clause_model.eval()
+def get_embed_model():
+    global embed_model
+    if embed_model is None:
+        embed_model = SentenceTransformer(EMBEDDING_MODEL)
+    return embed_model
+
+
+def get_kw_model():
+    global kw_model
+    if kw_model is None:
+        kw_model = KeyBERT(model=get_embed_model())
+    return kw_model
+
+
+def get_summarizer():
+    global summarizer
+    if summarizer is None:
+        summarizer = pipeline(
+            "summarization",
+            model="t5-small",
+            device=-1
+        )
+    return summarizer
+
+
+def get_clause_model():
+    global tokenizer, clause_model
+    if clause_model is None:
+        tokenizer = AutoTokenizer.from_pretrained(LEGAL_MODEL_PATH)
+        clause_model = AutoModelForSequenceClassification.from_pretrained(
+            LEGAL_MODEL_PATH,
+            torch_dtype=torch.float32
+        ).to(device)
+        clause_model.eval()
+    return tokenizer, clause_model
 
 
 
@@ -115,7 +143,7 @@ def clean_keyword(phrase):
 
 def deduplicate_keywords(keywords, threshold=0.75):
     phrases = [kw for kw, _ in keywords]
-    embeddings = embed_model.encode(phrases)
+    embeddings = get_embed_model().encode(phrases)
 
     keep, used = [], set()
     for i, p in enumerate(phrases):
@@ -137,7 +165,7 @@ def summarize_text(full_text):
     if not sentences:
         return [], []
 
-    embeddings = embed_model.encode(sentences)
+    embeddings = get_embed_model().encode(sentences)
     sim_matrix = cosine_similarity(embeddings)
     scores = sim_matrix.mean(axis=1)
 
@@ -167,7 +195,13 @@ def summarize_text(full_text):
 
     simplified = []
     for s in unique:
-        out = summarizer("simplify: " + s, max_length=100, min_length=15, do_sample=False)
+        out = get_summarizer()(
+            "simplify: " + s,
+            max_length=100,
+            min_length=15,
+            do_sample=False
+        )
+
         txt = out[0]['summary_text']
         if txt and not txt[0].isupper():
             txt = txt[0].upper() + txt[1:]
@@ -182,13 +216,24 @@ def summarize_text(full_text):
 # CLAUSE CLASSIFICATION
 # =========================
 def classify_clause(text):
-    inputs = tokenizer(text, return_tensors="pt", truncation=True, padding=True, max_length=256)
+    tokenizer, clause_model = get_clause_model()
+
+    inputs = tokenizer(
+        text,
+        return_tensors="pt",
+        truncation=True,
+        padding=True,
+        max_length=256
+    )
     inputs = {k: v.to(device) for k, v in inputs.items()}
+
     with torch.no_grad():
         out = clause_model(**inputs)
         probs = torch.softmax(out.logits, dim=1)
         conf, id = torch.max(probs, dim=1)
-        return clause_model.config.id2label[id.item()], conf.item()
+
+    return clause_model.config.id2label[id.item()], conf.item()
+
 
 
 def pick_top_clauses(sentences):
@@ -199,7 +244,7 @@ def pick_top_clauses(sentences):
 
     df = pd.DataFrame(rows)
 
-    embeddings = embed_model.encode(df["sentence"].tolist())
+    embeddings = get_embed_model().encode(df["sentence"].tolist())
     mean_emb = embeddings.mean(axis=0)
 
     df["importance"] = cosine_similarity([mean_emb], embeddings)[0]
@@ -237,8 +282,9 @@ def compare_top_clauses(df1, df2):
     v1_sents = df1["sentence"].tolist()
     v2_sents = df2["sentence"].tolist()
 
-    emb1 = embed_model.encode(v1_sents)
-    emb2 = embed_model.encode(v2_sents)
+    emb1 = get_embed_model().encode(v1_sents)
+    emb2 = get_embed_model().encode(v2_sents)
+
 
     sim_matrix = cosine_similarity(emb1, emb2)
 
@@ -292,10 +338,13 @@ def compare_top_clauses(df1, df2):
 def compare_versions(text1, text2):
 
     # keywords
-    raw_kw = kw_model.extract_keywords(
-        text2, keyphrase_ngram_range=(1, 3),
-        stop_words=STOP_WORDS, top_n=TOP_N_KEYWORDS
+    raw_kw = get_kw_model().extract_keywords(
+        text2,
+        keyphrase_ngram_range=(1, 3),
+        stop_words=STOP_WORDS,
+        top_n=TOP_N_KEYWORDS
     )
+
     cleaned = [(clean_keyword(k), s) for k, s in raw_kw if len(k) > 2]
     unique = deduplicate_keywords(cleaned)
     final_kw = [kw for kw, _ in unique[:FINAL_KEYWORD_COUNT]]
@@ -415,7 +464,7 @@ def download_comp():
     return response
 
 
-
-
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host="0.0.0.0", port=port)
+
