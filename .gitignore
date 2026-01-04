@@ -4,11 +4,15 @@
 legalbert_clause_model/*.tmp
 legalbert_clause_model/*.bak
 
-# HuggingFace cache (safe to ignore)
+# ============================
+# ML / CACHE (runtime only)
+# ============================
 huggingface/
 hf_cache/
-.cache/
+.cache/huggingface/
+.cache/torch/
 transformers_cache/
+nltk_data/
 
 # ============================
 # PYTHON
@@ -25,9 +29,9 @@ __pycache__/
 # ENVIRONMENT FILES
 # ============================
 venv/
+.venv/
 .env
 .env.*
-.venv/
 
 # ============================
 # OS / EDITOR FILES
@@ -47,7 +51,7 @@ Thumbs.db
 !.vscode/tasks.json
 
 # ============================
-# UPLOADS AND GENERATED FILES
+# UPLOADS (runtime only)
 # ============================
 uploads/*
 !uploads/.gitkeep
@@ -60,9 +64,8 @@ dist/
 build/
 
 # ============================
-# OTHER OPTIONAL
+# TEMP FILES
 # ============================
 *.bak
 *.tmp
 *.temp
-*.csv
