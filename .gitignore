@@ -3,6 +3,7 @@
 # ============================
 legalbert_clause_model/*.tmp
 legalbert_clause_model/*.bak
+legalbert_clause_model/
 
 # ============================
 # ML / CACHE (runtime only)
@@ -69,3 +70,6 @@ build/
 *.bak
 *.tmp
 *.temp
+
+hf_login.py
+upload_model.py
