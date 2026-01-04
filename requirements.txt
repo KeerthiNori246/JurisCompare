@@ -1,23 +1,17 @@
-# Web framework
-flask
-gunicorn
+flask==2.3.3
+gunicorn==21.2.0
 
-# PyTorch ecosystem
-torch==2.9.1
-torchvision==0.24.1
-torchaudio==2.9.1
+torch==2.1.2
+torchvision==0.16.2
+torchaudio==2.1.2
 
-# NLP / Hugging Face
-transformers==4.29.2
-huggingface_hub==0.19.4
+transformers==4.36.2
+huggingface_hub>=0.19.4,<1.0
 sentence-transformers==2.2.2
 keybert==0.8.3
 
-# Data
 scikit-learn
 pandas
-numpy
-
-# PDFs / NLP
+numpy<2.0
 pdfplumber
 nltk
