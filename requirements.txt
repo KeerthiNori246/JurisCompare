@@ -1,11 +1,10 @@
-# Web server
 flask
 gunicorn
 
-# PyTorch CPU-only (compatible with Render)
+# PyTorch CPU-compatible for Python 3.13
 torch==2.9.1
-torchvision==0.9.1
-torchaudio==0.9.1
+torchvision==0.16.2
+torchaudio==2.9.1
 
 # NLP / ML
 transformers==4.36.2
