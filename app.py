@@ -39,7 +39,13 @@ FILLER_WORDS = {
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 import nltk
-nltk.data.path.append("/usr/share/nltk_data")
+
+try:
+    nltk.data.find("tokenizers/punkt")
+except LookupError:
+    nltk.download("punkt", download_dir="/tmp/nltk_data")
+
+nltk.data.path.append("/tmp/nltk_data")
 
 # =========================
 # MODELS (LOAD ONCE)
@@ -351,34 +357,62 @@ def compare():
     p1 = os.path.join(UPLOAD_FOLDER, f1.filename)
     p2 = os.path.join(UPLOAD_FOLDER, f2.filename)
 
-    f1.save(p1)
-    f2.save(p2)
+    try:
+        # Save temporarily
+        f1.save(p1)
+        f2.save(p2)
 
-    text1 = clean_text(extract_text_from_pdf(p1))
-    text2 = clean_text(extract_text_from_pdf(p2))
+        # Process
+        text1 = clean_text(extract_text_from_pdf(p1))
+        text2 = clean_text(extract_text_from_pdf(p2))
 
-    keywords, summary, comp_df, clause_counts, change_stats = compare_versions(text1, text2)
+        keywords, summary, comp_df, clause_counts, change_stats = compare_versions(text1, text2)
 
-    comp_path = os.path.join(UPLOAD_FOLDER, "clause_comparison.csv")
-    comp_df.to_csv(comp_path, index=False)
+        comp_path = os.path.join(UPLOAD_FOLDER, "clause_comparison.csv")
+        comp_df.to_csv(comp_path, index=False)
 
-    return jsonify({
-    "keywords": keywords,
-    "summary": summary,
-    "comparison_csv": "/download_comparison",
-    "clause_counts": clause_counts,
-    "change_stats": change_stats
-    })
+        return jsonify({
+            "keywords": keywords,
+            "summary": summary,
+            "comparison_csv": "/download_comparison",
+            "clause_counts": clause_counts,
+            "change_stats": change_stats
+        })
+
+    finally:
+        # 🔐 GUARANTEED CLEANUP
+        for path in [p1, p2]:
+            try:
+                if os.path.exists(path):
+                    os.remove(path)
+            except Exception:
+                pass
 
 
 
 @app.route("/download_comparison")
 def download_comp():
     p = os.path.join(UPLOAD_FOLDER, "clause_comparison.csv")
-    return send_file(p, mimetype="text/csv", as_attachment=True,
-                     download_name="clause_comparison.csv")
+
+    response = send_file(
+        p,
+        mimetype="text/csv",
+        as_attachment=True,
+        download_name="clause_comparison.csv"
+    )
+
+    @response.call_on_close
+    def cleanup():
+        try:
+            if os.path.exists(p):
+                os.remove(p)
+        except Exception:
+            pass
+
+    return response
+
 
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run()
