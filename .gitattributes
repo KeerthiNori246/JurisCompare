@@ -1,9 +1,6 @@
-# Track entire model folder with LFS
-legalbert_clause_model/* filter=lfs diff=lfs merge=lfs -text
-# Track common ML model formats (safetensors, bin, h5, pt)
-*.safetensors filter=lfs diff=lfs merge=lfs -text
-*.bin filter=lfs diff=lfs merge=lfs -text
-*.h5 filter=lfs diff=lfs merge=lfs -text
+# Track generic large ML files (only if ever added)
 *.pt filter=lfs diff=lfs merge=lfs -text
 *.pth filter=lfs diff=lfs merge=lfs -text
-legalbert_clause_model/* filter=lfs diff=lfs merge=lfs -text
+*.bin filter=lfs diff=lfs merge=lfs -text
+*.h5 filter=lfs diff=lfs merge=lfs -text
+*.safetensors filter=lfs diff=lfs merge=lfs -text
