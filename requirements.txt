@@ -1,17 +1,23 @@
+# Web framework
 flask
 gunicorn
 
+# PyTorch ecosystem
 torch==2.9.1
 torchvision==0.24.1
 torchaudio==2.9.1
 
+# NLP / Hugging Face
 transformers==4.29.2
-huggingface_hub==0.16.4
+huggingface_hub==0.19.4
 sentence-transformers==2.2.2
 keybert==0.8.3
-tokenizers==0.15.2
+
+# Data
 scikit-learn
 pandas
 numpy
+
+# PDFs / NLP
 pdfplumber
 nltk
