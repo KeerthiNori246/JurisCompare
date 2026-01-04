@@ -1,4 +1,9 @@
-import os, re, io, csv, nltk, torch, pdfplumber, unicodedata
+import os
+os.environ["CUDA_VISIBLE_DEVICES"] = ""
+os.environ["TRANSFORMERS_CACHE"] = "/tmp/hf_cache"
+os.environ["HF_HOME"] = "/tmp/hf_home"
+
+import re, io, csv, nltk, torch, pdfplumber, unicodedata
 import pandas as pd
 import numpy as np
 
@@ -33,7 +38,8 @@ FILLER_WORDS = {
 }
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-nltk.download("punkt")
+import nltk
+nltk.data.path.append("/usr/share/nltk_data")
 
 # =========================
 # MODELS (LOAD ONCE)
@@ -47,7 +53,12 @@ summarizer = pipeline(
 )
 
 tokenizer = AutoTokenizer.from_pretrained(LEGAL_MODEL_PATH)
-clause_model = AutoModelForSequenceClassification.from_pretrained(LEGAL_MODEL_PATH).to(device)
+clause_model = AutoModelForSequenceClassification.from_pretrained(
+    LEGAL_MODEL_PATH,
+    torch_dtype=torch.float32
+).to(device)
+clause_model.eval()
+
 
 
 # =========================
