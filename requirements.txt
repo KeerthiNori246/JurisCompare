@@ -9,6 +9,7 @@ transformers==4.29.2
 huggingface_hub==0.16.4
 sentence-transformers==2.2.2
 keybert==0.8.3
+tokenizers==0.15.2
 scikit-learn
 pandas
 numpy
