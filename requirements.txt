@@ -1,15 +1,16 @@
+# Web server
 flask
 gunicorn
 
-torch==2.1.2+cpu
-torchvision==0.16.2+cpu
-torchaudio==2.1.2+cpu
---extra-index-url https://download.pytorch.org/whl/cpu
+# PyTorch CPU-only (compatible with Render)
+torch==2.9.1
+torchvision==0.9.1
+torchaudio==0.9.1
 
+# NLP / ML
 transformers==4.36.2
 sentence-transformers==2.2.2
 keybert==0.8.3
-
 scikit-learn
 pandas
 numpy
