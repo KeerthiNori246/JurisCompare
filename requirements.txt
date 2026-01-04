@@ -1,12 +1,10 @@
 flask
 gunicorn
 
-# PyTorch CPU-compatible for Python 3.13
 torch==2.9.1
-torchvision==0.16.2
+torchvision==0.24.1
 torchaudio==2.9.1
 
-# NLP / ML
 transformers==4.36.2
 sentence-transformers==2.2.2
 keybert==0.8.3
