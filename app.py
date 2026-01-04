@@ -22,7 +22,8 @@ UPLOAD_FOLDER = "uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 EMBEDDING_MODEL = "all-MiniLM-L6-v2"
-LEGAL_MODEL_PATH = "./legalbert_clause_model"
+LEGAL_MODEL_PATH = "keerthiN24/legalbert-clause-model"
+
 
 TOP_N_SUMMARY = 20
 TOP_N_KEYWORDS = 80
