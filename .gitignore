@@ -1,9 +1,7 @@
-# ============================
-# MODEL (do NOT ignore folder)
-# ============================
+# MODEL (stored on Hugging Face, never committed)
+legalbert_clause_model/
 legalbert_clause_model/*.tmp
 legalbert_clause_model/*.bak
-legalbert_clause_model/
 
 # ============================
 # ML / CACHE (runtime only)

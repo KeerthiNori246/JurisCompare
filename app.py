@@ -41,12 +41,14 @@ FILLER_WORDS = {
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 import nltk
 
+NLTK_DIR = "/tmp/nltk_data"
+nltk.data.path.append(NLTK_DIR)
+
 try:
     nltk.data.find("tokenizers/punkt")
 except LookupError:
-    nltk.download("punkt", download_dir="/tmp/nltk_data")
+    nltk.download("punkt", download_dir=NLTK_DIR, quiet=True)
 
-nltk.data.path.append("/tmp/nltk_data")
 
 # =========================
 # MODELS (LOAD ONCE)
